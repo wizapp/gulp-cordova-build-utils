@@ -11,7 +11,8 @@ const fs = require('fs');
 
 const DEFAULT_SOURCE = 'index.html';
 
-const injectionFilePath = 'index.html.inject';
+const injectionFilePath = require.resolve('./index.html.inject');
+
 /**
  * Replaces placeholder in the index.html of the Cordova application
  * 
