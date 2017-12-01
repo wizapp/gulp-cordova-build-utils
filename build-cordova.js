@@ -18,9 +18,7 @@ const size = require('gulp-size');
  * @param {Object} args Command line argument for tests
  * @returns 
  */
-exports.build = function buildCordova(osType, args = {}) {
-	// Get basic configuration from build.json
-	const buildConfig = JSON.parse(fs.readFileSync('build.json', 'utf-8'));
+exports.build = function buildCordova(osType, buildConfig, args = {}) {
 
 	const buildConfigName = args.release ? 'release' : 'development';
 	const osConfig = buildConfig[osType][buildConfigName] || {};
