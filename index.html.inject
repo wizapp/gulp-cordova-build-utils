@@ -1,0 +1,38 @@
+<head-start>
+  <!-- inject:cordova-script -->
+  <!-- inject:cordova-csp -->
+</head-start>
+
+<head-end>
+  <link rel="import" href="bower_components/polymer/lib/elements/dom-bind.html">
+  <link rel="import" href="bower_components/polymer/lib/elements/dom-if.html">
+</head-end>
+
+<body-start>
+  <dom-bind>
+    <template>
+      <dom-if if="[[deviceReady]]">
+        <template>
+</body-start>
+
+          <polytest-app></polytest-app>
+
+<body-end>
+        </template>
+      </dom-if>
+    </template>
+  </dom-bind>
+  <script>
+    (function (document) {
+      'use strict';
+      document.addEventListener(
+        "deviceready",
+        () => {
+          document.querySelector('dom-bind').deviceReady = true;
+        },
+        false
+      );
+    })(document);
+  </script>
+</body-end>
+ 

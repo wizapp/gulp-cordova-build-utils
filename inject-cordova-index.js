@@ -7,9 +7,11 @@ const filter = require('gulp-filter');
 const lazypipe = require('lazypipe');
 const replace = require('gulp-replace');
 const size = require('gulp-size');
+const fs = require('fs');
 
 const DEFAULT_SOURCE = 'index.html';
 
+const injectionFilePath = 'index.html.inject';
 /**
  * Replaces placeholder in the index.html of the Cordova application
  * 
@@ -24,11 +26,50 @@ module.exports = function injectIndex({ connectSrc, defaultSrc, frameSrc, source
 
 	return lazypipe()
 		.pipe(() => htmlFilter)
+		.pipe(() => injectDeviceReadyDetection(injectionFilePath)())
 		.pipe(() => replace(/<base\ *href=".*"\ *>/, ''))
 		.pipe(() => replace('<!-- inject:cordova-script -->', '<script src="cordova.js" async></script>'))
 		.pipe(() => replace('<!-- inject:cordova-csp -->', createMetaCsp(source, connectSrc, defaultSrc, frameSrc)))
 		.pipe(() => size({title: 'inject-cordova-index'}))
 		.pipe(() => htmlFilter.restore);
+}
+
+// HTML Injection
+function injectDeviceReadyDetection(injectionFilePath) {
+  const textToInject = extractTextToInject(injectionFilePath);
+  return lazypipe()
+    .pipe(() => replace(/<head>/, `<head>${textToInject.headStart}`))
+    .pipe(() => replace(/<\/head>/, `${textToInject.headEnd}</head>`))
+    .pipe(() => replace(/<body>/, `<body>${textToInject.bodyStart}`))
+    .pipe(() => replace(/<\/body>/, `${textToInject.bodyEnd}</body>`))
+    .pipe(() => size({ title: "inject-cordova-trigger" }));
+}
+
+function extractTextToInject(injectionFilePath) {
+	const injectionText = String(fs.readFileSync(injectionFilePath));
+	if (!injectionText) {
+		throw new Error(
+      `File ${injectionFilePath} not found !`
+    );
+	}
+  const headStart = /<head-start>([\s\S]*)<\/head-start>/.exec(injectionText);
+  const headEnd = /<head-end>([\s\S]*)<\/head-end>/.exec(injectionText);
+  const bodyStart = /<body-start>([\s\S]*)<\/body-start>/.exec(injectionText);
+  const bodyEnd = /<body-end>([\s\S]*)<\/body-end>/.exec(injectionText);
+  // const headEnd = injectionText.match(/<head-end>([\s\S]*)<\/head-end>/g);
+  if (!headStart || !headEnd || !bodyStart || !bodyEnd) {
+    throw new Error(
+      `Bad injection file. Required patterns do no match (<head-end>/<body-start>/<body-end> !!!! Please ensure to use a well formatted injextion file (here we use: '${
+        injectionFilePath
+      }')`
+    );
+  }
+  return {
+    headStart: headStart[1],
+    headEnd: headEnd[1],
+    bodyStart: bodyStart[1],
+    bodyEnd: bodyEnd[1]
+  };
 }
 
 /**
