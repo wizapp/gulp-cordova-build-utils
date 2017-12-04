@@ -1,6 +1,6 @@
 <head-start>
   <!-- inject:cordova-script -->
-  <!-- inject:cordova-csp -->
+  <!-- _inject:cordova-csp -->
 </head-start>
 
 <head-end>
